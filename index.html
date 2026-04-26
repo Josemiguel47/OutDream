@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OUTDREAM | Official Store</title>
+    <style>
+        :root { --black: #000; --white: #fff; --gray: #f4f4f4; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--white); color: var(--black); }
+        
+        /* Menú de Navegación */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; border-bottom: 1px solid var(--gray); position: sticky; top: 0; background: white; z-index: 100; }
+        nav .logo { font-weight: 800; font-size: 1.5rem; letter-spacing: 2px; }
+        nav ul { list-style: none; display: flex; gap: 25px; margin: 0; padding: 0; }
+        nav ul li { cursor: pointer; text-transform: uppercase; font-size: 0.8rem; font-weight: 600; }
+
+        /* Sección Portada (Hero) */
+        .hero { height: 60vh; background: var(--black); color: var(--white); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .hero h2 { font-size: 3rem; margin: 0; letter-spacing: 5px; }
+        .hero p { opacity: 0.7; letter-spacing: 2px; }
+
+        /* Contenedores de Secciones */
+        .section { padding: 50px 5%; display: none; }
+        .active { display: block; }
+
+        /* Grid de Ropa */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        .card { border: 1px solid var(--gray); padding: 15px; transition: 0.3s; }
+        .card:hover { border-color: var(--black); }
+        .card img { width: 100%; height: auto; background: var(--gray); }
+        
+        /* Carrito */
+        .cart-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--gray); }
+        button { background: var(--black); color: var(--white); border: none; padding: 12px 25px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: 600; }
+        button:disabled { background: #ccc; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo">OUTDREAM</div>
+    <ul>
+        <li onclick="showSection('home')">Inicio</li>
+        <li onclick="showSection('tienda')">Ropa</li>
+        <li onclick="showSection('carrito')">Carrito (<span id="cart-count">0</span>)</li>
+    </ul>
+</nav>
+
+<div id="home" class="section active">
+    <div class="hero">
+        <h2>OUTDREAM</h2>
+        <p>LIMITED COLLECTION // DROP 01</p>
+        <button style="width: auto;" onclick="showSection('tienda')">EXPLORAR COLECCIÓN</button>
+    </div>
+</div>
+
+<div id="tienda" class="section">
+    <h2 style="text-align: center; margin-bottom: 40px;">TODOS LOS PRODUCTOS</h2>
+    <div class="grid" id="catalogo"></div>
+</div>
+
+<div id="carrito" class="section">
+    <h2>TU CARRITO</h2>
+    <div id="cart-items">
+        <p>Tu carrito está vacío.</p>
+    </div>
+    <div id="cart-total" style="margin-top: 20px; font-weight: bold;"></div>
+</div>
+
+<script>
+    const productos = [
+        { id: 1, nombre: "T-Shirt Moon Black", precio: 85000, stock: 12 },
+        { id: 2, nombre: "Hoodie Signature", precio: 160000, stock: 12 },
+        { id: 3, nombre: "Cap Outdream", precio: 55000, stock: 5 }
+    ];
+
+    let carrito = [];
+
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function renderTienda() {
+        const catalogo = document.getElementById('catalogo');
+        catalogo.innerHTML = productos.map(p => `
+            <div class="card">
+                <img src="https://via.placeholder.com/400x500?text=${p.nombre}" alt="${p.nombre}">
+                <h3>${p.nombre}</h3>
+                <p>$${p.precio.toLocaleString()}</p>
+                <p style="font-size: 0.8rem; color: #777;">Stock: ${p.stock} unidades</p>
+                <button onclick="addToCart(${p.id})" ${p.stock === 0 ? 'disabled' : ''}>
+                    ${p.stock === 0 ? 'AGOTADO' : 'AGREGAR'}
+                </button>
+            </div>
+        `).join('');
+    }
+
+    // Función para Agregar
+    function addToCart(id) {
+        const prod = productos.find(p => p.id === id);
+        if(prod.stock > 0) {
+            prod.stock--; // Baja el stock en la tienda
+            carrito.push({...prod}); // Agregamos una copia al carrito
+            updateCart();
+            renderTienda();
+        }
+    }
+
+    // NUEVA FUNCIÓN: Quitar del carrito
+    function removeFromCart(index) {
+        // 1. Obtenemos el producto que vamos a quitar usando su posición en el carrito
+        const productoARemover = carrito[index];
+
+        // 2. Le devolvemos el stock al producto original en la tienda
+        const productoEnTienda = productos.find(p => p.id === productoARemover.id);
+        productoEnTienda.stock++;
+
+        // 3. Lo eliminamos del arreglo del carrito
+        carrito.splice(index, 1);
+
+        // 4. Actualizamos todo
+        updateCart();
+        renderTienda();
+    }
+
+    function updateCart() {
+        document.getElementById('cart-count').innerText = carrito.length;
+        const cartDiv = document.getElementById('cart-items');
+        
+        if(carrito.length === 0) {
+            cartDiv.innerHTML = "<p>Tu carrito está vacío.</p>";
+            document.getElementById('cart-total').innerText = "";
+            return;
+        }
+
+        // Renderizamos el carrito con el botón de eliminar
+        cartDiv.innerHTML = carrito.map((item, index) => `
+            <div class="cart-item" style="display: flex; align-items: center; gap: 10px;">
+                <span style="flex-grow: 1;">${item.nombre} - $${item.precio.toLocaleString()}</span>
+                <button onclick="removeFromCart(${index})" style="width: auto; background: #ff4444; padding: 5px 10px; font-size: 0.7rem;">
+                    QUITAR
+                </button>
+            </div>
+        `).join('');
+        
+        const total = carrito.reduce((sum, item) => sum + item.precio, 0);
+        document.getElementById('cart-total').innerText = "TOTAL: $" + total.toLocaleString();
+    }
+
+    renderTienda();
+</script>
+
+</body>
+</html>
