@@ -5,34 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OUTDREAM | Official Store</title>
     <style>
-        :root { --black: #000; --white: #fff; --gray: #f4f4f4; }
-        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--white); color: var(--black); }
+        :root { --black: #000; --white: #fff; --gray: #f4f4f4; --danger: #d9534f; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; background: var(--white); color: var(--black); }
         
         /* Menú de Navegación */
         nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; border-bottom: 1px solid var(--gray); position: sticky; top: 0; background: white; z-index: 100; }
         nav .logo { font-weight: 800; font-size: 1.5rem; letter-spacing: 2px; }
         nav ul { list-style: none; display: flex; gap: 25px; margin: 0; padding: 0; }
-        nav ul li { cursor: pointer; text-transform: uppercase; font-size: 0.8rem; font-weight: 600; }
+        nav ul li { cursor: pointer; text-transform: uppercase; font-size: 0.8rem; font-weight: 600; transition: 0.2s; }
+        nav ul li:hover { opacity: 0.6; }
 
         /* Sección Portada (Hero) */
-        .hero { height: 60vh; background: var(--black); color: var(--white); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .hero { height: 60vh; background: var(--black); color: var(--white); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 20px; }
         .hero h2 { font-size: 3rem; margin: 0; letter-spacing: 5px; }
-        .hero p { opacity: 0.7; letter-spacing: 2px; }
+        .hero p { opacity: 0.7; letter-spacing: 2px; margin: 15px 0 30px 0; }
 
         /* Contenedores de Secciones */
-        .section { padding: 50px 5%; display: none; }
+        .section { padding: 50px 5%; display: none; min-height: 50vh; }
         .active { display: block; }
 
         /* Grid de Ropa */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
-        .card { border: 1px solid var(--gray); padding: 15px; transition: 0.3s; }
+        .card { border: 1px solid var(--gray); padding: 15px; transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between; }
         .card:hover { border-color: var(--black); }
-        .card img { width: 100%; height: auto; background: var(--gray); }
+        .card img { width: 100%; height: auto; background: var(--gray); aspect-ratio: 4/5; object-fit: cover; }
         
-        /* Carrito */
-        .cart-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--gray); }
-        button { background: var(--black); color: var(--white); border: none; padding: 12px 25px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: 600; }
-        button:disabled { background: #ccc; }
+        /* Estilos del Carrito */
+        .cart-container { max-width: 600px; margin: 0 auto; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid var(--gray); margin-bottom: 10px; }
+        .cart-info { display: flex; flex-direction: column; }
+        .btn-remove { background: var(--danger); width: auto; padding: 8px 15px; margin-top: 0; font-size: 0.75rem; }
+
+        /* Botones Globales */
+        button { background: var(--black); color: var(--white); border: none; padding: 12px 25px; cursor: pointer; width: 100%; margin-top: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; }
+        button:hover { opacity: 0.8; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .empty-message { text-align: center; color: #777; margin-top: 40px; }
     </style>
 </head>
 <body>
@@ -50,28 +58,31 @@
     <div class="hero">
         <h2>OUTDREAM</h2>
         <p>LIMITED COLLECTION // DROP 01</p>
-        <button style="width: auto;" onclick="showSection('tienda')">EXPLORAR COLECCIÓN</button>
+        <button style="width: auto;" onclick="showSection('tienda')">Explorar Colección</button>
     </div>
 </div>
 
 <div id="tienda" class="section">
-    <h2 style="text-align: center; margin-bottom: 40px;">TODOS LOS PRODUCTOS</h2>
+    <h2 style="text-align: center; margin-bottom: 40px; letter-spacing: 2px;">PRODUCTOS DISPONIBLES</h2>
     <div class="grid" id="catalogo"></div>
 </div>
 
 <div id="carrito" class="section">
-    <h2>TU CARRITO</h2>
-    <div id="cart-items">
-        <p>Tu carrito está vacío.</p>
+    <div class="cart-container">
+        <h2 style="text-align: center; margin-bottom: 40px; letter-spacing: 2px;">TU CARRITO</h2>
+        <div id="cart-items">
+            <p class="empty-message">Tu carrito está vacío.</p>
+        </div>
+        <div id="cart-total" style="margin-top: 30px; font-weight: bold; font-size: 1.3rem; text-align: right; border-top: 2px solid var(--black); padding-top: 10px;"></div>
     </div>
-    <div id="cart-total" style="margin-top: 20px; font-weight: bold;"></div>
 </div>
 
 <script>
+    // Estado del inventario (Stock limitado de 12 unidades para asegurar exclusividad)
     const productos = [
         { id: 1, nombre: "T-Shirt Moon Black", precio: 85000, stock: 12 },
-        { id: 2, nombre: "Hoodie Signature", precio: 160000, stock: 12 },
-        { id: 3, nombre: "Cap Outdream", precio: 55000, stock: 5 }
+        { id: 2, nombre: "Hoodie Signature Grey", precio: 160000, stock: 12 },
+        { id: 3, nombre: "Cap Outdream Minimalist", precio: 55000, stock: 5 }
     ];
 
     let carrito = [];
@@ -79,47 +90,46 @@
     function showSection(id) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        window.scrollTo(0,0);
     }
 
     function renderTienda() {
         const catalogo = document.getElementById('catalogo');
         catalogo.innerHTML = productos.map(p => `
             <div class="card">
-                <img src="https://via.placeholder.com/400x500?text=${p.nombre}" alt="${p.nombre}">
-                <h3>${p.nombre}</h3>
-                <p>$${p.precio.toLocaleString()}</p>
-                <p style="font-size: 0.8rem; color: #777;">Stock: ${p.stock} unidades</p>
-                <button onclick="addToCart(${p.id})" ${p.stock === 0 ? 'disabled' : ''}>
-                    ${p.stock === 0 ? 'AGOTADO' : 'AGREGAR'}
-                </button>
+                <div>
+                    <img src="https://via.placeholder.com/400x500/1a1a1a/ffffff?text=${encodeURIComponent(p.nombre)}" alt="${p.nombre}">
+                    <h3 style="font-size: 1.1rem; margin: 15px 0 5px 0;">${p.nombre}</h3>
+                    <p style="margin: 0 0 10px 0; font-weight: bold;">$${p.precio.toLocaleString()}</p>
+                </div>
+                <div>
+                    <p style="font-size: 0.8rem; color: #777; margin: 0;">Disponibles: ${p.stock} unds</p>
+                    <button onclick="addToCart(${p.id})" ${p.stock === 0 ? 'disabled' : ''}>
+                        ${p.stock === 0 ? 'AGOTADO' : 'AGREGAR AL CARRITO'}
+                    </button>
+                </div>
             </div>
         `).join('');
     }
 
-    // Función para Agregar
     function addToCart(id) {
         const prod = productos.find(p => p.id === id);
         if(prod.stock > 0) {
-            prod.stock--; // Baja el stock en la tienda
-            carrito.push({...prod}); // Agregamos una copia al carrito
+            prod.stock--;
+            carrito.push({ cartId: Date.now() + Math.random(), id: prod.id, nombre: prod.nombre, precio: prod.precio });
             updateCart();
             renderTienda();
         }
     }
 
-    // NUEVA FUNCIÓN: Quitar del carrito
-    function removeFromCart(index) {
-        // 1. Obtenemos el producto que vamos a quitar usando su posición en el carrito
-        const productoARemover = carrito[index];
+    function removeFromCart(cartId, originalId) {
+        // Devolver el stock a la tienda
+        const prodTienda = productos.find(p => p.id === originalId);
+        if(prodTienda) prodTienda.stock++;
 
-        // 2. Le devolvemos el stock al producto original en la tienda
-        const productoEnTienda = productos.find(p => p.id === productoARemover.id);
-        productoEnTienda.stock++;
-
-        // 3. Lo eliminamos del arreglo del carrito
-        carrito.splice(index, 1);
-
-        // 4. Actualizamos todo
+        // Eliminar del elemento del carrito por su ID único de sesión
+        carrito = carrito.filter(item => item.cartId !== cartId);
+        
         updateCart();
         renderTienda();
     }
@@ -127,25 +137,26 @@
     function updateCart() {
         document.getElementById('cart-count').innerText = carrito.length;
         const cartDiv = document.getElementById('cart-items');
+        const totalDiv = document.getElementById('cart-total');
         
         if(carrito.length === 0) {
-            cartDiv.innerHTML = "<p>Tu carrito está vacío.</p>";
-            document.getElementById('cart-total').innerText = "";
+            cartDiv.innerHTML = "<p class='empty-message'>Tu carrito está vacío.</p>";
+            totalDiv.innerText = "";
             return;
         }
 
-        // Renderizamos el carrito con el botón de eliminar
-        cartDiv.innerHTML = carrito.map((item, index) => `
-            <div class="cart-item" style="display: flex; align-items: center; gap: 10px;">
-                <span style="flex-grow: 1;">${item.nombre} - $${item.precio.toLocaleString()}</span>
-                <button onclick="removeFromCart(${index})" style="width: auto; background: #ff4444; padding: 5px 10px; font-size: 0.7rem;">
-                    QUITAR
-                </button>
+        cartDiv.innerHTML = carrito.map(item => `
+            <div class="cart-item">
+                <div class="cart-info">
+                    <span style="font-weight: 600;">${item.nombre}</span>
+                    <span style="font-size: 0.9rem; color: #555;">$${item.precio.toLocaleString()}</span>
+                </div>
+                <button class="btn-remove" onclick="removeFromCart(${item.cartId}, ${item.id})">Quitar</button>
             </div>
         `).join('');
         
         const total = carrito.reduce((sum, item) => sum + item.precio, 0);
-        document.getElementById('cart-total').innerText = "TOTAL: $" + total.toLocaleString();
+        totalDiv.innerText = "TOTAL: $" + total.toLocaleString();
     }
 
     renderTienda();
